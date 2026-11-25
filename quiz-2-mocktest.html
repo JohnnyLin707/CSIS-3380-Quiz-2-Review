@@ -31,7 +31,9 @@
   .btn2 { background:var(--blue); }
   .q { border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:12px 0; background:#fbfdff; }
   .q-title { font-weight:bold; margin-bottom:8px; }
+  .q-en { font-size:13px; color:#5b6b7c; margin:-2px 0 9px; font-style:italic; }
   .q label { display:block; margin:4px 0; }
+  .tutorial-step { border-left:4px solid var(--blue); padding:10px 14px; margin:14px 0; background:#f7fbff; border-radius:0 6px 6px 0; }
   .tag { display:inline-block; font-size:12px; color:#fff; background:var(--blue); border-radius:8px; padding:2px 8px; margin-right:8px; }
   .tag.code { background:var(--purple); }
   .tag.fill { background:var(--amber); }
@@ -107,7 +109,248 @@ start();</pre>
 </section>
 
 <section>
-  <h2>题目（20 题，每题都有答案与解析）</h2>
+  <h2>编程实操教程：从创建到测试运行通过（Bakery API）</h2>
+  <div class="note">这一段就是考试时可以照着做的完整流程：先用最小 generator 思路建项目，再填 URI、写 Server、启动、Postman 测试、mongosh / Atlas 验证。</div>
+
+  <div class="tutorial-step">
+    <h3>Step 1 — 建项目文件夹并安装依赖</h3>
+    <p>打开 PowerShell，进入你想放作业的位置，然后执行：</p>
+    <pre>mkdir bakery-api
+cd bakery-api
+npm init -y
+npm install express mongoose dotenv cors
+New-Item server.js, .env, .env.example, .gitignore</pre>
+    <p><code>.gitignore</code> 内容：</p>
+    <pre>node_modules/
+.env
+.DS_Store</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 2 — 填 URI（Atlas 或本地都可以）</h3>
+    <p><code>.env</code> 示例（Atlas）：</p>
+    <pre>MONGODB_URI=mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bakery?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <p>如果用本地 MongoDB：</p>
+    <pre>MONGODB_URI=mongodb://127.0.0.1:27017/bakery
+PORT=3000</pre>
+    <p><code>.env.example</code> 只放模板，不放真实密码：</p>
+    <pre>MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bakery?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <div class="warn">真实 URI 只能放 <code>.env</code>，不能提交到 GitHub。数据库名建议写成 <code>bakery</code>，这样和 Bakery Lab 对应。</div>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 3 — 写 package.json scripts</h3>
+    <p>打开 <code>package.json</code>，确认有 <code>start</code> 脚本：</p>
+    <pre>{
+  "name": "bakery-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --watch server.js",
+    "serve": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^9.0.0"
+  }
+}</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 4 — 写 server.js（完整可跑版）</h3>
+    <p>下面是 Bakery API 的完整单文件版本。它包含 Schema / Model、GET / POST / PUT / DELETE、404 和错误处理。复制到 <code>server.js</code>。</p>
+    <pre>require('dotenv').config({ quiet: true });
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// ------------------------------------------------ Schema / Model
+const productSchema = new mongoose.Schema(
+  {
+    productName: { type: String, required: true, trim: true },
+    productDay:  { type: String, required: true, trim: true }
+  },
+  { timestamps: true }
+);
+
+const Product = mongoose.model('Product', productSchema);
+
+// ------------------------------------------------ Health / welcome
+app.get('/', (req, res) =&gt; {
+  res.json({ message: 'Welcome to the Bakery API' });
+});
+
+// ------------------------------------------------ GET all + filter
+app.get('/api/products', async (req, res, next) =&gt; {
+  try {
+    const filter = {};
+    if (req.query.productDay) {
+      filter.productDay = req.query.productDay;
+    }
+    const products = await Product.find(filter).sort({ productName: 1 });
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ------------------------------------------------ GET one
+app.get('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.json(product);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ------------------------------------------------ POST create
+app.post('/api/products', async (req, res, next) =&gt; {
+  try {
+    if (req.body.productName && req.body.productDay) {
+      const product = await Product.create({
+        productName: req.body.productName,
+        productDay: req.body.productDay
+      });
+      res.status(201).json(product);
+    } else {
+      res.status(400).json({ message: 'productName and productDay are required.' });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ------------------------------------------------ PUT update
+app.put('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { productName: req.body.productName, productDay: req.body.productDay },
+      { returnDocument: 'after', runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.json(product);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ------------------------------------------------ DELETE
+app.delete('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ------------------------------------------------ 404 + error handler
+app.use((req, res, next) =&gt; {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res, next) =&gt; {
+  if (err.name === 'CastError') {
+    return res.status(400).json({ error: { message: 'That is not a valid product id.' } });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: { message: err.message } });
+  }
+  res.status(err.status || 500);
+  res.json({ error: { message: err.message } });
+});
+
+// ------------------------------------------------ connect then listen
+async function start() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+    app.listen(port, () =&gt; {
+      console.log('Bakery API listening on port ' + port);
+    });
+  } catch (err) {
+    console.error('Could not connect to MongoDB:', err.message);
+    process.exit(1);
+  }
+}
+
+start();</pre>
+    <div class="note">如果老师给的是数字 <code>id</code> 而不是默认 <code>_id</code>，把 Schema 改成 <code>id: { type: Number, required: true, unique: true }</code>，并把 <code>findById</code> 全部换成 <code>findOne({ id: Number(req.params.id) })</code>。</div>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 5 — 启动服务器</h3>
+    <pre>npm start</pre>
+    <p>成功日志：</p>
+    <pre>Connected to MongoDB
+Bakery API listening on port 3000</pre>
+    <div class="warn">如果报 <code>querySrv ENOTFOUND ...CLUSTER.mongodb.net</code>，说明 <code>.env</code> 里还是模板占位符，必须换成真实 URI。改完 <code>.env</code> 后要 <code>Ctrl+C</code> 重新 <code>npm start</code>。</div>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 6 — Postman / curl 测试通过</h3>
+    <table>
+      <tr><th>#</th><th>请求</th><th>Body (JSON)</th><th>预期</th></tr>
+      <tr><td>1</td><td><code>GET http://localhost:3000/</code></td><td>—</td><td>200 <code>{"message":"Welcome to the Bakery API"}</code></td></tr>
+      <tr><td>2</td><td><code>POST /api/products</code></td><td><code>{"productName":"Sourdough","productDay":"Monday"}</code></td><td>201，返回带 <code>_id</code> 的新产品</td></tr>
+      <tr><td>3</td><td><code>GET /api/products</code></td><td>—</td><td>200，数组里有 Sourdough</td></tr>
+      <tr><td>4</td><td><code>GET /api/products?productDay=Monday</code></td><td>—</td><td>200，只返回 Monday 的产品</td></tr>
+      <tr><td>5</td><td><code>GET /api/products/&lt;ID&gt;</code></td><td>—</td><td>200，返回单个产品</td></tr>
+      <tr><td>6</td><td><code>PUT /api/products/&lt;ID&gt;</code></td><td><code>{"productName":"Baguette","productDay":"Tuesday"}</code></td><td>200，返回更新后的产品</td></tr>
+      <tr><td>7</td><td><code>DELETE /api/products/&lt;ID&gt;</code></td><td>—</td><td>204</td></tr>
+      <tr><td>8</td><td><code>POST /api/products</code> 少字段</td><td><code>{"productName":"Croissant"}</code></td><td>400</td></tr>
+      <tr><td>9</td><td><code>GET /api/products/abc</code></td><td>—</td><td>400 CastError</td></tr>
+      <tr><td>10</td><td><code>GET /nope</code></td><td>—</td><td>404 Not Found</td></tr>
+    </table>
+    <p><code>&lt;ID&gt;</code> 从第 2 步 POST 返回的 <code>_id</code> 里复制。</p>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 7 — 验证真的写进 MongoDB</h3>
+    <p>只看到 API 返回还不够，最好去 Atlas 或 mongosh 再确认一次：</p>
+    <pre>mongosh "mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bakery"
+
+use bakery
+db.products.find().pretty()
+db.products.countDocuments()
+db.products.find({ productDay: "Monday" })</pre>
+    <p>如果这里能看到刚才 POST 的产品，就说明 Express → Mongoose → MongoDB 全链路成功。</p>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>Step 8 — 提交</h3>
+    <ul>
+      <li>提交 <code>server.js</code>、<code>package.json</code>、<code>.env.example</code>、<code>.gitignore</code>。</li>
+      <li><strong>不要提交</strong> <code>.env</code>、<code>node_modules/</code>、任何含密码的文件。</li>
+      <li>如果老师要报告，写清楚：URI 如何配置、定义了哪些 URL、Postman 测了哪些状态码、Atlas/mongosh 如何验证。</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>题目（20 题，每题都有中英题干、答案与解析）</h2>
   <button class="btn" id="submitBtn">提交评分</button>
   <button class="btn btn2" id="showAllBtn">展开全部答案</button>
   <div id="scoreBox"></div>
@@ -124,6 +367,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: 'MongoDB Atlas 的连接字符串（URI）在项目中的主要作用是什么？',
+    titleEn: 'What is the main purpose of a MongoDB Atlas connection string (URI) in a project?',
     options: ['它是前端网页的 URL', '告诉 Mongoose 连接哪个集群、账号和数据库', '定义 REST 路由', '安装 npm 依赖'],
     answer: 1,
     explain: 'URI 是数据库的地址和钥匙，包含集群、用户名、密码和数据库名。'
@@ -131,12 +375,14 @@ const QUESTIONS = [
   {
     type: 'fill',
     title: '.env 文件中存放 MongoDB 连接串的变量名是什么？',
+    titleEn: 'What is the variable name used in .env to store the MongoDB connection string?',
     answer: ['MONGODB_URI'],
     explain: '代码里写 process.env.MONGODB_URI，所以 .env 的键必须完全一致。'
   },
   {
     type: 'single',
     title: '连接字符串应该写在哪里才安全？',
+    titleEn: 'Where should the connection string be stored to keep it secure?',
     options: ['server.js 顶部', '.env 里，并让 .gitignore 忽略 .env', 'README.md', 'React 前端'],
     answer: 1,
     explain: 'URI 含密码，属于敏感信息，不能进代码仓库。'
@@ -144,6 +390,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '正确启动顺序是哪一个？',
+    titleEn: 'Which startup order is correct?',
     options: ['app.listen() → mongoose.connect()', "dotenv.config() → mongoose.connect() → app.listen()", 'mongoose.connect() → dotenv.config()', '只 app.listen()'],
     answer: 1,
     explain: '先加载 .env，再连数据库，最后监听端口。'
@@ -151,6 +398,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: "mongoose.model('Product', productSchema) 通常对应哪个集合？",
+    titleEn: "Which MongoDB collection does mongoose.model('Product', productSchema) usually correspond to?",
     options: ['product', 'products', 'Products', 'productModel'],
     answer: 1,
     explain: 'Mongoose 会把模型名变小写复数：Product → products。'
@@ -158,6 +406,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '新增一个 Bakery product 应该使用哪个请求？',
+    titleEn: 'Which request should be used to create a new Bakery product?',
     options: ['GET /api/products', 'POST /api/products', 'PUT /api/products', 'DELETE /api/products'],
     answer: 1,
     explain: 'POST 用于向集合路径创建新资源。'
@@ -165,6 +414,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '成功创建新资源时最合适的状态码是？',
+    titleEn: 'Which status code is most appropriate when a new resource is successfully created?',
     options: ['200', '201', '204', '404'],
     answer: 1,
     explain: '201 Created 表示资源创建成功。'
@@ -172,6 +422,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '读取全部 products 应使用哪个请求？',
+    titleEn: 'Which request should be used to read all products?',
     options: ['GET /api/products', 'GET /api/products/:id', 'POST /api/products', 'DELETE /api/products/:id'],
     answer: 0,
     explain: 'GET 集合路径读取全部。'
@@ -179,6 +430,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '读取单个 product 的 REST URL 是？',
+    titleEn: 'What is the REST URL for reading a single product?',
     options: ['GET /api/products', 'GET /api/products/:id', 'POST /api/products/:id', 'DELETE /api/products'],
     answer: 1,
     explain: '单条资源用 /:id。'
@@ -186,6 +438,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '在 /api/products?productDay=Monday 中，取 productDay 应使用？',
+    titleEn: 'In /api/products?productDay=Monday, which object should be used to get productDay?',
     options: ['req.params', 'req.query', 'req.body', 'req.headers'],
     answer: 1,
     explain: '问号后面的查询字符串用 req.query。'
@@ -193,6 +446,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '在 /api/products/:id 中，取 id 应使用？',
+    titleEn: 'In /api/products/:id, which object should be used to get id?',
     options: ['req.params', 'req.query', 'req.body', 'req.cookies'],
     answer: 0,
     explain: '路径参数用 req.params。'
@@ -200,6 +454,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: 'POST 请求中的 JSON 数据通常从哪个对象读取？',
+    titleEn: 'Which object is normally used to read JSON data in a POST request?',
     options: ['req.params', 'req.query', 'req.body', 'req.url'],
     answer: 2,
     explain: 'express.json() 会把 JSON body 解析到 req.body。'
@@ -207,12 +462,14 @@ const QUESTIONS = [
   {
     type: 'fill',
     title: '查询字符串写在 URL 的哪个符号之后？（只写一个符号）',
+    titleEn: 'After which symbol is a query string written in a URL? Write only one symbol.',
     answer: ['?'],
     explain: '例如 /api/products?productDay=Monday。'
   },
   {
     type: 'code',
     title: '补全 Schema：productName 是必填字符串并自动去空格，productDay 是必填字符串。写出关键字段定义。',
+    titleEn: 'Complete the Schema: productName is a required string with whitespace trimmed, and productDay is a required string. Write the key field definitions.',
     keywords: ['productname', 'string', 'required', 'trim', 'productday'],
     answerText: "productName: { type: String, required: true, trim: true },\nproductDay: { type: String, required: true, trim: true }",
     explain: 'type 指定类型，required 表示必填，trim 自动去首尾空格。'
@@ -220,6 +477,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: '如果 Schema 规定 productDay 必填，POST 时漏掉它，Mongoose 会抛什么错误？',
+    titleEn: 'If the Schema requires productDay and it is missing in a POST request, what error does Mongoose throw?',
     options: ['CastError', 'ValidationError', 'SyntaxError', 'TimeoutError'],
     answer: 1,
     explain: '字段不满足 Schema 规则会触发 ValidationError，通常返回 400。'
@@ -227,6 +485,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: 'GET /api/products/123 中 123 不是合法 ObjectId，通常返回什么？',
+    titleEn: 'In GET /api/products/123, if 123 is not a valid ObjectId, what is usually returned?',
     options: ['400 CastError', '404', '500', '201'],
     answer: 0,
     explain: 'ObjectId 格式非法是客户端输入错误，CastError 映射为 400。'
@@ -234,6 +493,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: "findByIdAndUpdate(..., { returnDocument: 'after' }) 的作用是什么？",
+    titleEn: "What is the effect of findByIdAndUpdate(..., { returnDocument: 'after' })?",
     options: ['返回更新后的文档', '返回更新前的旧文档', '只预览不更新', '删除文档'],
     answer: 0,
     explain: "returnDocument: 'after' 让 Mongoose 返回更新后的版本。"
@@ -241,6 +501,7 @@ const QUESTIONS = [
   {
     type: 'single',
     title: 'DELETE 成功且没有响应体时，最合适的状态码是？',
+    titleEn: 'Which status code is most appropriate when DELETE succeeds and there is no response body?',
     options: ['200', '201', '204', '400'],
     answer: 2,
     explain: '204 No Content 表示成功但没有内容返回。'
@@ -248,6 +509,7 @@ const QUESTIONS = [
   {
     type: 'multi',
     title: '哪些做法能证明 API 的写操作真的进入了 MongoDB？（多选）',
+    titleEn: 'Which practices prove that an API write operation really entered MongoDB? (Select all that apply)',
     options: ['API 返回 201 并带新 _id', 'mongosh 中 db.products.find() 能看到新文档', 'Atlas Browse Collections 能看到新文档', '只看页面颜色'],
     answer: [0, 1, 2],
     explain: 'API 响应加数据库验证才算完整测试。'
@@ -255,6 +517,7 @@ const QUESTIONS = [
   {
     type: 'multi',
     title: '要测试 Bakery API，哪些检查合理？（多选）',
+    titleEn: 'To test a Bakery API, which checks are reasonable? (Select all that apply)',
     options: ['GET /api/products 返回数组', 'POST 带 productName 和 productDay 返回 201', '用 ?productDay=Monday 能筛选', '把密码发给同学测试'],
     answer: [0, 1, 2],
     explain: '前三项验证读取、创建、查询；第四项会泄露密码。'
@@ -269,6 +532,7 @@ function renderQuestions() {
     div.className = 'q';
     let tag = q.type === 'single' ? '单选' : q.type === 'multi' ? '多选' : q.type === 'fill' ? '填空' : '代码';
     let inner = `<div class="q-title"><span class="tag ${q.type}">${tag}</span>${i + 1}. ${q.title}</div>`;
+    if (q.titleEn) inner += `<div class="q-en">English: ${q.titleEn}</div>`;
     if (q.type === 'single' || q.type === 'multi') {
       q.options.forEach((opt, j) => {
         const type = q.type === 'single' ? 'radio' : 'checkbox';
