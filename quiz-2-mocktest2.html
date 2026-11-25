@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSIS 3380 · Quiz 2 Mock Test 2 — Bookstore REST API (Bilingual)</title>
+<style>
+  :root { --navy:#1a3a5c; --blue:#2d6ca2; --bg:#f4f7fb; --line:#d7e0ea; --green:#2e7d32; --red:#c62828; --amber:#b26a00; --purple:#6b2fb5; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,"Microsoft YaHei",sans-serif; background:var(--bg); color:#24313f; line-height:1.65; }
+  header { background:linear-gradient(120deg,var(--navy),var(--blue)); color:#fff; padding:28px 32px; }
+  header h1 { margin:0 0 6px; font-size:26px; }
+  header p { margin:4px 0; opacity:.94; }
+  .badge { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); padding:3px 10px; border-radius:12px; font-size:13px; margin-right:8px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:26px 22px 80px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px 24px; margin-bottom:20px; box-shadow:0 2px 6px rgba(20,50,80,.04); }
+  section h2 { color:var(--navy); border-bottom:3px solid var(--line); padding-bottom:8px; margin-top:0; font-size:20px; }
+  h3 { color:var(--blue); margin:18px 0 8px; font-size:17px; }
+  code { background:#eef2f7; padding:1px 5px; border-radius:4px; font-family:Consolas,monospace; font-size:13px; }
+  pre { background:#15202b; color:#e6edf3; padding:14px 16px; border-radius:8px; overflow:auto; font-family:Consolas,monospace; font-size:12px; line-height:1.5; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:14px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--navy); color:#fff; }
+  tr:nth-child(even) td { background:#f7fafc; }
+  .note,.warn,.ok { border-left:5px solid; padding:10px 14px; margin:14px 0; border-radius:0 6px 6px 0; }
+  .note { border-color:var(--blue); background:#eef5fb; }
+  .warn { border-color:var(--amber); background:#fff7e8; }
+  .ok { border-color:var(--green); background:#eef8ef; }
+  .btn { display:inline-block; background:var(--purple); color:#fff; border:0; border-radius:8px; padding:10px 16px; cursor:pointer; font-size:15px; margin:8px 8px 8px 0; }
+  .btn:hover { background:#552190; }
+  .btn2 { background:var(--blue); }
+  .q { border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:12px 0; background:#fbfdff; }
+  .q-title { font-weight:bold; margin-bottom:4px; }
+  .q-en { font-size:13px; color:#5b6b7c; margin:0 0 9px; font-style:italic; }
+  .en-sub { font-size:12px; color:#66788c; font-style:italic; margin-top:2px; }
+  .q label { display:block; margin:5px 0; }
+  .tag { display:inline-block; font-size:12px; color:#fff; background:var(--blue); border-radius:8px; padding:2px 8px; margin-right:8px; }
+  .tag.code { background:var(--purple); }
+  .tag.fill { background:var(--amber); }
+  .tag.multi { background:var(--green); }
+  details.answer { margin-top:10px; background:#eef8ef; border-left:4px solid var(--green); padding:8px 12px; border-radius:4px; }
+  input[type=text] { padding:6px 8px; border:1px solid var(--line); border-radius:5px; min-width:240px; }
+  #scoreBox { font-size:18px; font-weight:bold; margin-top:10px; }
+  .compare { border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:14px 0; background:#fbfdff; }
+  .compare h3 { margin-top:0; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .beginner { border-left:4px solid var(--amber); background:#fff9ee; padding:10px 12px; border-radius:0 6px 6px 0; }
+  .teacher { border-left:4px solid var(--blue); background:#eef5fb; padding:10px 12px; border-radius:0 6px 6px 0; }
+  .label { font-weight:bold; margin-bottom:4px; }
+  footer { text-align:center; color:#7a8a9a; font-size:13px; padding:20px; }
+  @media (max-width:900px) { .grid2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Quiz 2 Mock Test 2 — Bookstore REST API（Bilingual + 横向对比）</h1>
+  <p><span class="badge">CSIS 3380</span><span class="badge">Quiz 2</span><span class="badge">Bookstore</span><span class="badge">Beginner vs Teacher Style</span></p>
+  <p>主题预测 / Predicted topic：老师教材 <code>book-store-api-checkpoints/final</code> 的实体最可能被换皮出题：Book / <code>title</code> / <code>author</code> / <code>pages</code> / <code>fiction</code>。</p>
+</header>
+
+<div class="wrap">
+<p><a href="index.html">← 返回 Quiz 2 复习总览 / Back to Quiz 2 overview</a></p>
+
+<section>
+  <h2>为什么选 Bookstore？/ Why this topic?</h2>
+  <p>Module 8 的主教材就是 <code>book-store-api-checkpoints/final</code>。老师已经用 Bakery 举过例，正式 Quiz 很可能换成教材里的另一个简单实体，例如 Bookstore、Movie、Student。Bookstore 是最像教材原题的一个。</p>
+  <p>The main Module 8 textbook uses <code>book-store-api-checkpoints/final</code>. Since the teacher used Bakery as an example, the real quiz may simply swap the entity to Bookstore, Movie, or Student. Bookstore is the closest to the textbook.</p>
+</section>
+
+<section>
+  <h2>横向对比：新手最简单写法 vs 老师教材写法 / Beginner style vs textbook style</h2>
+
+  <div class="compare">
+    <h3>A. 依赖与设置 / Dependencies and setup</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>npm install express mongoose dotenv</pre>
+        <p>简单、够跑。/ Simple and enough to run.</p>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>npm install express mongoose dotenv cors
+require('dotenv').config({ quiet: true });
+app.use(express.json());
+app.use(cors());</pre>
+        <p>多了 CORS 和 quiet 配置，适合部署/React 调用。/ Adds CORS and quiet dotenv output.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>B. Schema / Model</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>const bookSchema = new mongoose.Schema({
+  title: String,
+  author: String
+});
+
+const Book = mongoose.model('Book', bookSchema);</pre>
+        <p>最短写法，只定义字段类型。/ Shortest version: only field types.</p>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>const bookSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    author: { type: String, required: true, trim: true },
+    pages: { type: Number, required: true, min: 1 },
+    fiction: { type: Boolean, default: false }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('Book', bookSchema);</pre>
+        <p>字段规则完整，错误信息更清楚。/ Full validation and automatic timestamps.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>C. GET all / 读取全部</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>app.get('/api/books', async (req, res) =&gt; {
+  const books = await Book.find();
+  res.json(books);
+});</pre>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>router.route('/')
+  .get(async (req, res) =&gt; {
+    const books = await Book.find().sort({ title: 1 });
+    res.json(books);
+  });</pre>
+        <p>老师用 Router + 链式 route，并排序。/ Teacher uses Router and sorting.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>D. POST / 创建</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>app.post('/api/books', async (req, res) =&gt; {
+  const book = await Book.create(req.body);
+  res.json(book);
+});</pre>
+        <p>能跑，但状态码和安全性较弱。/ It runs, but lacks status code and validation.</p>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>router.route('/')
+  .post(async (req, res) =&gt; {
+    const { title, author, pages, fiction } = req.body;
+    const book = await Book.create({ title, author, pages, fiction });
+    res.status(201).json(book);
+  });</pre>
+        <p>取出指定字段并 return 201。/ Pick known fields and return 201.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>E. GET one / 读取单条</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>app.get('/api/books/:id', async (req, res) =&gt; {
+  const book = await Book.findById(req.params.id);
+  res.json(book);
+});</pre>
+        <p>找不到时返回 null，状态码仍是 200。/ Returns null with 200 if missing.</p>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>router.route('/:id')
+  .get(async (req, res) =&gt; {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+    res.json(book);
+  });</pre>
+        <p>找不到明确返回 404。/ Missing document means 404.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>F. PUT / DELETE / 更新和删除</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>app.put('/api/books/:id', async (req, res) =&gt; {
+  const book = await Book.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(book);
+});
+
+app.delete('/api/books/:id', async (req, res) =&gt; {
+  await Book.findByIdAndDelete(req.params.id);
+  res.sendStatus(204);
+});</pre>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>router.route('/:id')
+  .put(async (req, res) =&gt; {
+    const book = await Book.findByIdAndUpdate(
+      req.params.id,
+      { title, author, pages, fiction },
+      { returnDocument: 'after', runValidators: true }
+    );
+    res.json(book);
+  })
+  .delete(async (req, res) =&gt; {
+    const book = await Book.findByIdAndDelete(req.params.id);
+    if (!book) return res.status(404).json({ message: 'Book not found.' });
+    res.status(204).end();
+  });</pre>
+        <p>Mongoose 9 推荐 <code>returnDocument: 'after'</code>，旧 <code>new: true</code> 已废弃。/ Use returnDocument in Mongoose 9.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <h3>G. 启动顺序 / Startup order</h3>
+    <div class="grid2">
+      <div class="beginner">
+        <div class="label">新手写法 / Beginner style</div>
+        <pre>mongoose.connect(process.env.MONGODB_URI);
+app.listen(3000);</pre>
+        <p>能跑，但没等连接结果。/ It may run before the DB is ready.</p>
+      </div>
+      <div class="teacher">
+        <div class="label">老师教材写法 / Teacher style</div>
+        <pre>async function start() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    app.listen(port, () =&gt; console.log('API is running'));
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+}
+start();</pre>
+        <p>先连数据库再监听，失败就退出。/ Connect first, then listen; exit on failure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>题目（20 题，中英双语 + 答案解析）/ 20 bilingual questions</h2>
+  <button class="btn" id="submitBtn">提交评分 / Submit</button>
+  <button class="btn btn2" id="showAllBtn">展开全部答案 / Show all answers</button>
+  <div id="scoreBox"></div>
+  <div id="questions"></div>
+</section>
+
+</div>
+
+<footer>CSIS 3380 · Quiz 2 Mock Test 2 · Bookstore REST API · Beginner vs Teacher Style</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    type: 'fill',
+    title: 'Book 模型默认对应的 collection 名是什么？',
+    titleEn: 'What is the default collection name for the Book model?',
+    answer: ['books'],
+    answerEn: ['books'],
+    explain: 'Mongoose 会把 Book 变成小写复数 books。',
+    explainEn: 'Mongoose makes Book lowercase and plural: books.'
+  },
+  {
+    type: 'single',
+    title: 'title 字段在老师教材里是什么类型？',
+    titleEn: 'What type is the title field in the teacher textbook?',
+    options: ['Number', 'Boolean', 'String', 'Date'],
+    optionsEn: ['Number', 'Boolean', 'String', 'Date'],
+    answer: 2,
+    explain: 'title 是字符串。',
+    explainEn: 'title is a string.'
+  },
+  {
+    type: 'single',
+    title: 'pages 字段在老师教材里是什么类型？',
+    titleEn: 'What type is the pages field in the teacher textbook?',
+    options: ['Number', 'String', 'Boolean', 'Array'],
+    optionsEn: ['Number', 'String', 'Boolean', 'Array'],
+    answer: 0,
+    explain: 'pages 是数字，并常有 min: 1。',
+    explainEn: 'pages is a number and often uses min: 1.'
+  },
+  {
+    type: 'single',
+    title: 'fiction 字段在老师教材里是什么类型？',
+    titleEn: 'What type is the fiction field in the teacher textbook?',
+    options: ['String', 'Boolean', 'Number', 'ObjectId'],
+    optionsEn: ['String', 'Boolean', 'Number', 'ObjectId'],
+    answer: 1,
+    explain: 'fiction 是布尔值，通常 default: false。',
+    explainEn: 'fiction is a Boolean, usually with default: false.'
+  },
+  {
+    type: 'code',
+    title: '补全老师教材风格的 Schema：title 必填字符串并 trim，author 必填字符串并 trim。',
+    titleEn: 'Complete the teacher-style Schema: title is a required trimmed string, author is a required trimmed string.',
+    keywords: ['title', 'string', 'required', 'trim', 'author'],
+    answerText: "title: { type: String, required: true, trim: true },\nauthor: { type: String, required: true, trim: true }",
+    answerTextEn: 'Both fields should use type String, required true, and trim true.',
+    explain: '老师教材用 type/required/trim 明确规则。',
+    explainEn: 'The teacher style defines type, required, and trim explicitly.'
+  },
+  {
+    type: 'single',
+    title: 'MongoDB URI 应该放在哪里？',
+    titleEn: 'Where should the MongoDB URI be placed?',
+    options: ['server.js 顶部硬编码', '.env 文件', 'package.json', 'README.md'],
+    optionsEn: ['Hardcoded at the top of server.js', 'In the .env file', 'In package.json', 'In README.md'],
+    answer: 1,
+    explain: 'URI 含密码，放 .env 并忽略提交。',
+    explainEn: 'The URI contains a password; put it in .env and ignore it in Git.'
+  },
+  {
+    type: 'fill',
+    title: '.env 中的变量名通常是什么？',
+    titleEn: 'What is the usual variable name in .env?',
+    answer: ['MONGODB_URI'],
+    answerEn: ['MONGODB_URI'],
+    explain: '代码中读 process.env.MONGODB_URI。',
+    explainEn: 'The code reads process.env.MONGODB_URI.'
+  },
+  {
+    type: 'single',
+    title: 'dotenv.config() 应该放在哪里？',
+    titleEn: 'Where should dotenv.config() be placed?',
+    options: ['最后一行', '任何 process.env 之前', '只在 seed.js', '不需要'],
+    optionsEn: ['Last line', 'Before any use of process.env', 'Only in seed.js', 'Not needed'],
+    answer: 1,
+    explain: '先加载 .env，process.env 才有值。',
+    explainEn: 'Load .env first so process.env has values.'
+  },
+  {
+    type: 'single',
+    title: '正确启动顺序是什么？',
+    titleEn: 'What is the correct startup order?',
+    options: ['listen → connect', 'connect → listen', '只有 listen', '只有 connect'],
+    optionsEn: ['listen → connect', 'connect → listen', 'listen only', 'connect only'],
+    answer: 1,
+    explain: '先 mongoose.connect，成功后再 app.listen。',
+    explainEn: 'Connect with mongoose first, then call app.listen.'
+  },
+  {
+    type: 'single',
+    title: 'GET /api/books 表示什么？',
+    titleEn: 'What does GET /api/books mean?',
+    options: ['创建一本书', '读取所有书', '更新一本书', '删除一本书'],
+    optionsEn: ['Create a book', 'Read all books', 'Update a book', 'Delete a book'],
+    answer: 1,
+    explain: 'GET 集合路径读取全部。',
+    explainEn: 'GET on the collection path reads all items.'
+  },
+  {
+    type: 'single',
+    title: 'POST /api/books 成功时老师教材返回什么状态码？',
+    titleEn: 'What status code does the teacher textbook return after a successful POST /api/books?',
+    options: ['200', '201', '204', '404'],
+    optionsEn: ['200', '201', '204', '404'],
+    answer: 1,
+    explain: 'POST 创建成功返回 201。',
+    explainEn: 'A successful POST returns 201.'
+  },
+  {
+    type: 'single',
+    title: 'GET /api/books/:id 中的 id 从哪里取？',
+    titleEn: 'Where is the id in GET /api/books/:id read from?',
+    options: ['req.body', 'req.query', 'req.params', 'req.headers'],
+    optionsEn: ['req.body', 'req.query', 'req.params', 'req.headers'],
+    answer: 2,
+    explain: '路径参数用 req.params。',
+    explainEn: 'Route parameters are read from req.params.'
+  },
+  {
+    type: 'single',
+    title: '/api/books?fiction=true 中的 fiction 从哪里取？',
+    titleEn: 'Where is fiction read from in /api/books?fiction=true?',
+    options: ['req.body', 'req.query', 'req.params', 'req.cookies'],
+    optionsEn: ['req.body', 'req.query', 'req.params', 'req.cookies'],
+    answer: 1,
+    explain: '查询字符串用 req.query。',
+    explainEn: 'Query strings are read from req.query.'
+  },
+  {
+    type: 'single',
+    title: '老师教材里 PUT 返回更新后的文档用哪个选项？',
+    titleEn: 'Which option returns the updated document after PUT in the teacher textbook?',
+    options: ['new: true', 'returnDocument: "after"', 'sort: 1', 'limit: 1'],
+    optionsEn: ['new: true', 'returnDocument: "after"', 'sort: 1', 'limit: 1'],
+    answer: 1,
+    explain: 'Mongoose 9 使用 returnDocument: after。',
+    explainEn: 'Mongoose 9 uses returnDocument: after.'
+  },
+  {
+    type: 'single',
+    title: 'DELETE 成功且无响应体，状态码通常是什么？',
+    titleEn: 'What status code is usually returned when DELETE succeeds with no body?',
+    options: ['200', '201', '204', '400'],
+    optionsEn: ['200', '201', '204', '400'],
+    answer: 2,
+    explain: 'DELETE 成功无内容返回 204。',
+    explainEn: 'A successful DELETE with no body returns 204.'
+  },
+  {
+    type: 'single',
+    title: '非法 ObjectId 通常映射为什么状态码？',
+    titleEn: 'What status code is usually mapped from an invalid ObjectId?',
+    options: ['200', '201', '400', '500'],
+    optionsEn: ['200', '201', '400', '500'],
+    answer: 2,
+    explain: 'CastError 是客户端输入格式错，映射 400。',
+    explainEn: 'CastError is a client input format problem, so it maps to 400.'
+  },
+  {
+    type: 'single',
+    title: '缺少必填字段会触发什么错误？',
+    titleEn: 'What error is triggered when a required field is missing?',
+    options: ['CastError', 'ValidationError', 'ReferenceError', 'TimeoutError'],
+    optionsEn: ['CastError', 'ValidationError', 'ReferenceError', 'TimeoutError'],
+    answer: 1,
+    explain: 'Schema 校验失败是 ValidationError。',
+    explainEn: 'A Schema rule failure is a ValidationError.'
+  },
+  {
+    type: 'single',
+    title: '错误处理器必须有几个参数？',
+    titleEn: 'How many parameters must an Express error handler have?',
+    options: ['2', '3', '4', '5'],
+    optionsEn: ['2', '3', '4', '5'],
+    answer: 2,
+    explain: '四参数 (err, req, res, next)，Express 才认得。',
+    explainEn: 'Express recognizes it by four parameters: (err, req, res, next).'
+  },
+  {
+    type: 'multi',
+    title: '哪些做法能证明 POST 真的写入 MongoDB？（多选）',
+    titleEn: 'Which checks prove that POST really wrote to MongoDB? (Select all that apply)',
+    options: ['POST 返回 201 和 _id', 'GET /api/books 能看到新书', 'mongosh 里 db.books.find() 能看到', '只看终端颜色'],
+    optionsEn: ['POST returns 201 and _id', 'GET /api/books shows the new book', 'mongosh db.books.find() shows it', 'Only checking terminal color'],
+    answer: [0, 1, 2],
+    explain: 'API 响应和数据库验证都要做。',
+    explainEn: 'Check both the API response and the database.'
+  },
+  {
+    type: 'multi',
+    title: '老师教材风格比新手写法多了哪些优点？（多选）',
+    titleEn: 'What advantages does the teacher style have over the beginner style? (Select all that apply)',
+    options: ['required 校验', 'trim / min 规则', '404 和错误处理', '故意写更短'],
+    optionsEn: ['required validation', 'trim / min rules', '404 and error handling', 'Intentionally shorter'],
+    answer: [0, 1, 2],
+    explain: '老师写法更完整、更安全、错误信息更清楚。',
+    explainEn: 'The teacher style is more complete, safer, and gives clearer errors.'
+  }
+];
+
+function renderQuestions() {
+  const wrap = document.getElementById('questions');
+  wrap.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    let tag = q.type === 'single' ? '单选 / Single' : q.type === 'multi' ? '多选 / Multi' : q.type === 'fill' ? '填空 / Fill' : '代码 / Code';
+    let inner = `<div class="q-title"><span class="tag ${q.type}">${tag}</span>${i + 1}. ${q.title}</div>`;
+    if (q.titleEn) inner += `<div class="q-en">EN: ${q.titleEn}</div>`;
+    if (q.type === 'single' || q.type === 'multi') {
+      q.options.forEach((opt, j) => {
+        const type = q.type === 'single' ? 'radio' : 'checkbox';
+        const optEn = q.optionsEn && q.optionsEn[j] ? `<div class="en-sub">EN: ${q.optionsEn[j]}</div>` : '';
+        inner += `<label><input type="${type}" name="q${i}" value="${j}"> ${opt}${optEn}</label>`;
+      });
+    } else if (q.type === 'fill') {
+      inner += `<input type="text" id="q${i}" placeholder="输入答案 / type answer">`;
+    } else {
+      inner += `<textarea id="q${i}" rows="4" style="width:100%;padding:8px;" placeholder="写出关键代码 / write key code"></textarea>`;
+    }
+    let ans = '';
+    if (q.type === 'single') {
+      ans = `答案：${q.options[q.answer]}<div class="en-sub">EN answer: ${q.optionsEn[q.answer]}</div>`;
+    } else if (q.type === 'multi') {
+      ans = `答案：${q.answer.map(x => q.options[x]).join('；')}<div class="en-sub">EN answer: ${q.answer.map(x => q.optionsEn[x]).join('; ')}</div>`;
+    } else if (q.type === 'fill') {
+      ans = `答案：${q.answer.join(' / ')}<div class="en-sub">EN answer: ${q.answerEn.join(' / ')}</div>`;
+    } else {
+      ans = `参考答案：<pre>${q.answerText}</pre><div class="en-sub">EN: ${q.answerTextEn}</div>`;
+    }
+    inner += `<details class="answer"><summary>答案与解析 / Answer and explanation</summary>${ans}<div><strong>解析：</strong>${q.explain}</div><div class="en-sub"><strong>EN explanation:</strong> ${q.explainEn}</div></details>`;
+    div.innerHTML = inner;
+    wrap.appendChild(div);
+  });
+}
+
+function scoreQuiz() {
+  let score = 0;
+  QUESTIONS.forEach((q, i) => {
+    let ok = false;
+    if (q.type === 'single') {
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
+      ok = selected && Number(selected.value) === q.answer;
+    } else if (q.type === 'multi') {
+      const selected = Array.from(document.querySelectorAll(`input[name="q${i}"]:checked`)).map(x => Number(x.value)).sort();
+      ok = JSON.stringify(selected) === JSON.stringify([...q.answer].sort());
+    } else if (q.type === 'fill') {
+      const val = document.getElementById('q' + i).value.trim().toLowerCase();
+      ok = q.answer.some(a => a.toLowerCase() === val);
+    } else {
+      const val = document.getElementById('q' + i).value.toLowerCase();
+      ok = q.keywords.every(k => val.includes(k));
+    }
+    if (ok) score++;
+  });
+  document.getElementById('scoreBox').textContent = `得分 / Score：${score} / ${QUESTIONS.length}`;
+}
+
+function showAll() {
+  document.querySelectorAll('details.answer').forEach(d => d.open = true);
+}
+
+renderQuestions();
+document.getElementById('submitBtn').addEventListener('click', scoreQuiz);
+document.getElementById('showAllBtn').addEventListener('click', showAll);
+</script>
+</body>
+</html>
