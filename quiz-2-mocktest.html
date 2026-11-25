@@ -159,6 +159,211 @@ db.products.find().pretty()</pre>
 </section>
 
 <section>
+  <h2>完整可运行版：安装、代码、启动、最终检验 / Full runnable guide</h2>
+  <div class="note">如果你考试时需要从头做一个 Bakery API，直接照下面复制。它使用 Express 5 + Mongoose 9 + dotenv，包含 GET / POST / PUT / DELETE、查询筛选、404 和错误处理。</div>
+
+  <div class="tutorial-step">
+    <h3>A. 安装依赖 / Install dependencies</h3>
+    <pre>mkdir bakery-api
+cd bakery-api
+npm init -y
+npm install express mongoose dotenv cors
+mkdir models
+New-Item server.js, .env, .env.example, .gitignore
+New-Item models/Product.js</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>B. 配置文件 / Config files</h3>
+    <p><code>.env</code>（真实连接串，不上传）：</p>
+    <pre>MONGODB_URI=mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bakery?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <p><code>.env.example</code>（可上传模板）：</p>
+    <pre>MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bakery?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <p><code>.gitignore</code>：</p>
+    <pre>node_modules/
+.env
+.DS_Store</pre>
+    <p><code>package.json</code> 的 scripts：</p>
+    <pre>"scripts": {
+  "start": "node --watch server.js",
+  "serve": "node server.js"
+}</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>C. models/Product.js — Schema / Model</h3>
+    <pre>const mongoose = require('mongoose');
+
+const productSchema = new mongoose.Schema(
+  {
+    productName: { type: String, required: true, trim: true },
+    productDay:  { type: String, required: true, trim: true }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('Product', productSchema);</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>D. server.js — 完整代码 / Full server code</h3>
+    <pre>require('dotenv').config({ quiet: true });
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const Product = require('./models/Product');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// GET all + optional filter: /api/products?productDay=Monday
+app.get('/api/products', async (req, res, next) =&gt; {
+  try {
+    const filter = {};
+    if (req.query.productDay) {
+      filter.productDay = req.query.productDay;
+    }
+    const products = await Product.find(filter).sort({ productName: 1 });
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET one
+app.get('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.json(product);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST create
+app.post('/api/products', async (req, res, next) =&gt; {
+  try {
+    if (req.body.productName && req.body.productDay) {
+      const product = await Product.create({
+        productName: req.body.productName,
+        productDay: req.body.productDay
+      });
+      res.status(201).json(product);
+    } else {
+      res.status(400).json({ message: 'productName and productDay are required.' });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT update
+app.put('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { productName: req.body.productName, productDay: req.body.productDay },
+      { returnDocument: 'after', runValidators: true }
+    );
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.json(product);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE
+app.delete('/api/products/:id', async (req, res, next) =&gt; {
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 404 catch-all
+app.use((req, res, next) =&gt; {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use((err, req, res, next) =&gt; {
+  if (err.name === 'CastError') {
+    return res.status(400).json({ error: { message: 'That is not a valid product id.' } });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: { message: err.message } });
+  }
+  res.status(err.status || 500);
+  res.json({ error: { message: err.message } });
+});
+
+async function start() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+    app.listen(port, () =&gt; {
+      console.log('Bakery API listening on port ' + port);
+    });
+  } catch (err) {
+    console.error('Could not connect to MongoDB:', err.message);
+    process.exit(1);
+  }
+}
+
+start();</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>E. 启动 / Start</h3>
+    <pre>npm start</pre>
+    <p>看到这两行才算成功：</p>
+    <pre>Connected to MongoDB
+Bakery API listening on port 3000</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>F. 最终检验 / Final verification</h3>
+    <p>按顺序做，全部符合预期才算跑通：</p>
+    <table>
+      <tr><th>#</th><th>Postman/curl 请求</th><th>Body</th><th>预期 / Expected</th></tr>
+      <tr><td>1</td><td><code>GET http://localhost:3000/api/products</code></td><td>—</td><td>200，数组，可能是 <code>[]</code></td></tr>
+      <tr><td>2</td><td><code>POST /api/products</code></td><td><code>{"productName":"Sourdough","productDay":"Monday"}</code></td><td>201，返回带 <code>_id</code> 的产品</td></tr>
+      <tr><td>3</td><td><code>GET /api/products</code></td><td>—</td><td>200，能看到 Sourdough</td></tr>
+      <tr><td>4</td><td><code>GET /api/products?productDay=Monday</code></td><td>—</td><td>200，只返回 Monday 的产品</td></tr>
+      <tr><td>5</td><td><code>GET /api/products/&lt;ID&gt;</code></td><td>—</td><td>200，返回单个产品</td></tr>
+      <tr><td>6</td><td><code>PUT /api/products/&lt;ID&gt;</code></td><td><code>{"productName":"Baguette","productDay":"Tuesday"}</code></td><td>200，返回更新后的文档</td></tr>
+      <tr><td>7</td><td><code>DELETE /api/products/&lt;ID&gt;</code></td><td>—</td><td>204，无响应体</td></tr>
+      <tr><td>8</td><td><code>POST /api/products</code> 少字段</td><td><code>{"productName":"Croissant"}</code></td><td>400</td></tr>
+      <tr><td>9</td><td><code>GET /api/products/abc</code></td><td>—</td><td>400 CastError</td></tr>
+      <tr><td>10</td><td><code>GET /nope</code></td><td>—</td><td>404 Not Found</td></tr>
+    </table>
+    <p>数据库端最终确认：</p>
+    <pre>mongosh "mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bakery"
+use bakery
+db.products.find().pretty()
+db.products.countDocuments()</pre>
+    <div class="ok"><strong>✅ 全部通过标准</strong>：API 返回正确状态码；Atlas / mongosh 能看到数据；服务器没有崩溃；<code>.env</code> 没有提交到 GitHub。</div>
+  </div>
+</section>
+
+<section>
   <h2>题目（20 题，每题都有中英题干、选项、答案与解析）/ 20 bilingual questions</h2>
   <button class="btn" id="submitBtn">提交评分 / Submit</button>
   <button class="btn btn2" id="showAllBtn">展开全部答案 / Show all answers</button>

@@ -260,6 +260,221 @@ start();</pre>
 </section>
 
 <section>
+  <h2>完整可运行版：安装、代码、启动、最终检验 / Full runnable guide</h2>
+  <div class="note">如果你想把上面的横向对比真正跑起来，用下面这套 Bookstore API 代码。建议用老师教材风格：Schema 有 required / trim / min / timestamps，路由有 404 / 400 / 500，启动先连数据库。</div>
+
+  <div class="tutorial-step">
+    <h3>A. 安装依赖 / Install dependencies</h3>
+    <pre>mkdir bookstore-api
+cd bookstore-api
+npm init -y
+npm install express mongoose dotenv cors
+mkdir models routes
+New-Item server.js, .env, .env.example, .gitignore
+New-Item models/Book.js, routes/books.js</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>B. 配置文件 / Config files</h3>
+    <p><code>.env</code>：</p>
+    <pre>MONGODB_URI=mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bookstore?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <p>本地版 / Local:</p>
+    <pre>MONGODB_URI=mongodb://127.0.0.1:27017/bookstore
+PORT=3000</pre>
+    <p><code>.env.example</code>：</p>
+    <pre>MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/bookstore?retryWrites=true&amp;w=majority
+PORT=3000</pre>
+    <p><code>.gitignore</code>：</p>
+    <pre>node_modules/
+.env
+.DS_Store</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>C. models/Book.js — Schema / Model</h3>
+    <pre>const mongoose = require('mongoose');
+
+const bookSchema = new mongoose.Schema(
+  {
+    title:   { type: String, required: true, trim: true },
+    author:  { type: String, required: true, trim: true },
+    pages:   { type: Number, required: true, min: 1 },
+    fiction: { type: Boolean, default: false }
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('Book', bookSchema);</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>D. routes/books.js — 老师教材风格路由 / Textbook-style routes</h3>
+    <pre>const express = require('express');
+const Book = require('../models/Book');
+
+const router = express.Router();
+
+// GET /api/books
+router.get('/', async (req, res, next) =&gt; {
+  try {
+    const filter = {};
+    if (req.query.fiction) {
+      filter.fiction = req.query.fiction === 'true';
+    }
+    const books = await Book.find(filter).sort({ title: 1 });
+    res.json(books);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/books
+router.post('/', async (req, res, next) =&gt; {
+  try {
+    const { title, author, pages, fiction } = req.body;
+    const book = await Book.create({ title, author, pages, fiction });
+    res.status(201).json(book);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/books/:id
+router.get('/:id', async (req, res, next) =&gt; {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+    res.json(book);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/books/:id
+router.put('/:id', async (req, res, next) =&gt; {
+  try {
+    const { title, author, pages, fiction } = req.body;
+    const book = await Book.findByIdAndUpdate(
+      req.params.id,
+      { title, author, pages, fiction },
+      { returnDocument: 'after', runValidators: true }
+    );
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+    res.json(book);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/books/:id
+router.delete('/:id', async (req, res, next) =&gt; {
+  try {
+    const book = await Book.findByIdAndDelete(req.params.id);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>E. server.js — 主入口 / Main entry</h3>
+    <pre>require('dotenv').config({ quiet: true });
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bookRoutes = require('./routes/books');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/', (req, res) =&gt; {
+  res.json({ message: 'Welcome to the Bookstore API' });
+});
+
+app.use('/api/books', bookRoutes);
+
+// 404 catch-all
+app.use((req, res, next) =&gt; {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
+app.use((err, req, res, next) =&gt; {
+  if (err.name === 'CastError') {
+    return res.status(400).json({ error: { message: 'That is not a valid book id.' } });
+  }
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: { message: err.message } });
+  }
+  res.status(err.status || 500);
+  res.json({ error: { message: err.message } });
+});
+
+async function start() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+    app.listen(port, () =&gt; {
+      console.log('Bookstore API listening on port ' + port);
+    });
+  } catch (err) {
+    console.error('Could not connect to MongoDB:', err.message);
+    process.exit(1);
+  }
+}
+
+start();</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>F. 启动 / Start</h3>
+    <pre>npm start</pre>
+    <p>成功日志 / Success log:</p>
+    <pre>Connected to MongoDB
+Bookstore API listening on port 3000</pre>
+  </div>
+
+  <div class="tutorial-step">
+    <h3>G. 最终检验 / Final verification</h3>
+    <table>
+      <tr><th>#</th><th>请求 / Request</th><th>Body</th><th>预期 / Expected</th></tr>
+      <tr><td>1</td><td><code>GET http://localhost:3000/</code></td><td>—</td><td>200 welcome JSON</td></tr>
+      <tr><td>2</td><td><code>GET /api/books</code></td><td>—</td><td>200 array</td></tr>
+      <tr><td>3</td><td><code>POST /api/books</code></td><td><code>{"title":"Clean Code","author":"Robert Martin","pages":464,"fiction":false}</code></td><td>201，带 <code>_id</code></td></tr>
+      <tr><td>4</td><td><code>GET /api/books?fiction=false</code></td><td>—</td><td>200 filtered array</td></tr>
+      <tr><td>5</td><td><code>GET /api/books/&lt;ID&gt;</code></td><td>—</td><td>200 one book</td></tr>
+      <tr><td>6</td><td><code>PUT /api/books/&lt;ID&gt;</code></td><td><code>{"title":"Clean Code 2nd","author":"Robert Martin","pages":500,"fiction":false}</code></td><td>200 updated book</td></tr>
+      <tr><td>7</td><td><code>DELETE /api/books/&lt;ID&gt;</code></td><td>—</td><td>204</td></tr>
+      <tr><td>8</td><td><code>POST /api/books</code> 缺字段</td><td><code>{"title":"No Author"}</code></td><td>400 ValidationError</td></tr>
+      <tr><td>9</td><td><code>GET /api/books/abc</code></td><td>—</td><td>400 CastError</td></tr>
+      <tr><td>10</td><td><code>GET /nope</code></td><td>—</td><td>404 Not Found</td></tr>
+    </table>
+    <p>数据库端确认 / Verify MongoDB:</p>
+    <pre>mongosh "mongodb+srv://用户名:密码@cluster1.6qa39ly.mongodb.net/bookstore"
+use bookstore
+db.books.find().pretty()
+db.books.countDocuments()</pre>
+    <div class="ok"><strong>✅ 全部通过标准</strong>：Postman/curl 全部返回预期状态码；mongosh 或 Atlas Browse Collections 能看到 <code>books</code> 集合里的文档；服务器没有崩溃。</div>
+  </div>
+</section>
+
+<section>
   <h2>题目（20 题，中英双语 + 答案解析）/ 20 bilingual questions</h2>
   <button class="btn" id="submitBtn">提交评分 / Submit</button>
   <button class="btn btn2" id="showAllBtn">展开全部答案 / Show all answers</button>
