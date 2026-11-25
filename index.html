@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSIS 3380 · Quiz 2 复习总览 — Bakery REST API + Mongoose</title>
+<style>
+  :root { --navy:#1a3a5c; --blue:#2d6ca2; --bg:#f4f7fb; --line:#d7e0ea; --green:#2e7d32; --red:#c62828; --amber:#b26a00; --purple:#6b2fb5; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,"Microsoft YaHei",sans-serif; background:var(--bg); color:#24313f; line-height:1.65; }
+  header { background:linear-gradient(120deg,var(--navy),var(--blue)); color:#fff; padding:30px 32px; }
+  header h1 { margin:0 0 8px; font-size:27px; }
+  header p { margin:4px 0; opacity:.94; }
+  .badge { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); padding:3px 10px; border-radius:12px; font-size:13px; margin-right:8px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:26px 22px 80px; }
+  .toc, section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px 24px; margin-bottom:20px; box-shadow:0 2px 6px rgba(20,50,80,.04); }
+  .toc h2, section h2 { color:var(--navy); border-bottom:3px solid var(--line); padding-bottom:8px; margin-top:0; font-size:20px; }
+  h3 { color:var(--blue); margin:20px 0 8px; font-size:17px; }
+  code { background:#eef2f7; padding:1px 5px; border-radius:4px; font-family:Consolas,"Courier New",monospace; font-size:13px; }
+  pre { background:#15202b; color:#e6edf3; padding:14px 16px; border-radius:8px; overflow:auto; font-family:Consolas,monospace; font-size:13px; line-height:1.5; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:14px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--navy); color:#fff; }
+  tr:nth-child(even) td { background:#f7fafc; }
+  .note,.warn,.ok { border-left:5px solid; padding:10px 14px; margin:14px 0; border-radius:0 6px 6px 0; }
+  .note { border-color:var(--blue); background:#eef5fb; }
+  .warn { border-color:var(--amber); background:#fff7e8; }
+  .ok { border-color:var(--green); background:#eef8ef; }
+  .p0 { color:#fff; background:var(--red); padding:2px 8px; border-radius:8px; font-size:12px; }
+  .p1 { color:#fff; background:var(--amber); padding:2px 8px; border-radius:8px; font-size:12px; }
+  .p2 { color:#fff; background:var(--blue); padding:2px 8px; border-radius:8px; font-size:12px; }
+  .bigbtn { display:inline-block; background:var(--purple); color:#fff; text-decoration:none; padding:12px 20px; border-radius:8px; font-size:17px; font-weight:bold; margin:12px 8px 12px 0; }
+  .bigbtn:hover { background:#552190; }
+  .quote { background:#f6f1ff; border-left:5px solid var(--purple); padding:10px 14px; border-radius:0 6px 6px 0; margin:12px 0; }
+  ul.check { list-style:none; padding-left:0; }
+  ul.check li { padding:5px 0 5px 30px; position:relative; }
+  ul.check li:before { content:"☐"; position:absolute; left:4px; color:var(--blue); font-size:17px; }
+  footer { text-align:center; color:#7a8a9a; font-size:13px; padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Quiz 2 复习总览 — Bakery REST API + Mongoose</h1>
+  <p><span class="badge">CSIS 3380</span><span class="badge">Quiz 2</span><span class="badge">Module 8 核心</span><span class="badge">Douglas College</span></p>
+  <p>根据老师课堂转录与 Module 7 / Module 8 教材推断：这次 Quiz 2 的核心是 <strong>Express + Mongoose + MongoDB URI + REST API CRUD</strong>。</p>
+</header>
+
+<div class="wrap">
+
+<div class="toc">
+  <h2>快速导航</h2>
+  <a href="#conclusion">结论</a>
+  <a href="#teacher">老师原话对应考点</a>
+  <a href="#priority">考点优先级</a>
+  <a href="#bakery">Bakery 例子怎么做</a>
+  <a href="#module7">Module 7 是否重要</a>
+  <a href="#checklist">考前清单</a>
+  <a href="#files">复习文件</a>
+</div>
+
+<section class="ok">
+  <strong>一句话结论</strong>：Quiz 2 最可能考 Module 8 的“看生成器代码 → 写简单 Schema/Model → 配 URI → 定义 REST URL → 做 CRUD → 测试提交”。Module 7 React Router / Deployment 不是主线，最多考“前端 route 和后端 REST URL 的区别”。
+</section>
+
+<section>
+  <a class="bigbtn" href="quiz-2-mocktest.html">进入 Quiz-2 Mock Test（带答案与流程）</a>
+  <p>这个模拟题页面以老师说的 <strong>Bakery / productName / productDay</strong> 为主题，包含操作流程、题目、答案和解析。</p>
+</section>
+
+<section id="conclusion">
+  <h2>1. 结论：主考 Module 8，不主考 React Router</h2>
+  <table>
+    <tr><th>模块</th><th>与 Quiz 2 的关系</th><th>判断</th></tr>
+    <tr><td><strong>Module 8</strong> MongoDB REST API</td><td>URI、Mongoose、Schema/Model、REST URL、CRUD、状态码、Postman 测试</td><td><span class="p0">最高概率</span></td></tr>
+    <tr><td>Build a REST API with Express</td><td>GET / POST / PUT / DELETE、400/404/204、try/catch、统一错误处理</td><td><span class="p0">核心辅助</span></td></tr>
+    <tr><td>Module 7 React Router</td><td>前端路由 `<Routes>` / `<Route>` / `useParams`</td><td><span class="p2">低概率背景</span></td></tr>
+    <tr><td>React Deployment</td><td>Render / Vercel / GitHub Pages、SPA 刷新 404</td><td><span class="p2">低概率背景</span></td></tr>
+  </table>
+</section>
+
+<section id="teacher">
+  <h2>2. 老师转录对应的考点</h2>
+  <div class="quote">“create a database about A bakery that has product name and product Day ... use this generator code, test it submit.”</div>
+  <ul>
+    <li>会给一个简单实体，例如 Bakery，字段可能是 <code>productName</code>、<code>productDay</code>。</li>
+    <li>要会用老师给的代码生成器结构，不一定要从零背完整代码。</li>
+    <li>要能创建数据库：<strong>Atlas 或本地都可以，关键是有 URI</strong>。</li>
+    <li>要能定义 REST API URL，并和 Mongoose 连接。</li>
+    <li>要测试并提交。</li>
+  </ul>
+</section>
+
+<section id="priority">
+  <h2>3. 考点优先级</h2>
+  <table>
+    <tr><th>优先级</th><th>知识点</th><th>具体要会什么</th></tr>
+    <tr><td><span class="p0">P0</span></td><td>URI + `.env` + `MONGODB_URI`</td><td>Atlas/本地 URI 写法；URI 放 `.env`；`.gitignore` 忽略；`dotenv.config()` 放最前</td></tr>
+    <tr><td><span class="p0">P0</span></td><td>REST URL + CRUD</td><td>`GET /api/products`、`POST /api/products`、`GET /api/products/:id`、`PUT`、`DELETE`</td></tr>
+    <tr><td><span class="p0">P0</span></td><td>Schema / Model</td><td>把 `productName/productDay` 写成 Schema；`Product → products`；`required/trim/timestamps`</td></tr>
+    <tr><td><span class="p0">P0</span></td><td>启动顺序</td><td>`dotenv.config()` → `mongoose.connect()` → `app.listen()`</td></tr>
+    <tr><td><span class="p1">P1</span></td><td>状态码</td><td>`200 / 201 / 204 / 400 / 404 / 500` 各自什么时候用</td></tr>
+    <tr><td><span class="p1">P1</span></td><td>req 的三个对象</td><td>`req.body`、`req.params`、`req.query`</td></tr>
+    <tr><td><span class="p1">P1</span></td><td>Mongoose 方法</td><td>`find()`、`findById()`、`create()`、`findByIdAndUpdate()`、`findByIdAndDelete()`</td></tr>
+    <tr><td><span class="p1">P1</span></td><td>测试</td><td>Postman/curl 测 API；mongosh/Atlas 看数据是否真的写入</td></tr>
+    <tr><td><span class="p2">P2</span></td><td>错误处理</td><td>`CastError → 400`、`ValidationError → 400`、四参数 error handler</td></tr>
+    <tr><td><span class="p2">P2</span></td><td>Module 7 Router</td><td>知道 `useParams()` 是前端，`req.params` 是后端，不要混淆</td></tr>
+  </table>
+</section>
+
+<section id="bakery">
+  <h2>4. Bakery 例子：你考试时应该怎么做</h2>
+  <h3>4-1 字段设计</h3>
+  <pre>productSchema = {
+  productName: { type: String, required: true, trim: true },
+  productDay:  { type: String, required: true, trim: true }
+}
+Model: Product
+Collection: products
+Database URI: .../bakery 或任何老师指定的数据库名</pre>
+
+  <h3>4-2 URL 设计</h3>
+  <table>
+    <tr><th>操作</th><th>Method + URL</th><th>说明</th></tr>
+    <tr><td>读取全部</td><td>`GET /api/products`</td><td>集合路径用复数 products</td></tr>
+    <tr><td>读取单个</td><td>`GET /api/products/:id`</td><td>`req.params.id` 取路径参数</td></tr>
+    <tr><td>新增</td><td>`POST /api/products`</td><td>成功返回 `201`</td></tr>
+    <tr><td>更新</td><td>`PUT /api/products/:id`</td><td>成功返回 `200` 或 `204`，看生成器模板</td></tr>
+    <tr><td>删除</td><td>`DELETE /api/products/:id`</td><td>成功返回 `204`</td></tr>
+    <tr><td>查询某天产品</td><td>`GET /api/products?productDay=Monday`</td><td>`req.query.productDay` 取 query string</td></tr>
+  </table>
+
+  <h3>4-3 最关键的代码逻辑</h3>
+  <pre>require('dotenv').config();
+
+app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URI);
+
+const Product = mongoose.model('Product', productSchema);
+
+app.post('/api/products', async (req, res) =&gt; {
+  const doc = await Product.create({
+    productName: req.body.productName,
+    productDay: req.body.productDay
+  });
+  res.status(201).json(doc);
+});
+
+app.listen(process.env.PORT || 3000);</pre>
+</section>
+
+<section id="module7">
+  <h2>5. Module 7 为什么不是主线</h2>
+  <p>Module 7 两个文件夹主要是：</p>
+  <ul>
+    <li>React Router：`BrowserRouter`、`Routes`、`Route`、`Link`、`NavLink`、`useParams`、`useNavigate`。</li>
+    <li>Deployment：Render / Vercel / GitHub Pages，以及 React Router 刷新子路由 404 的问题。</li>
+  </ul>
+  <div class="note">老师这次说的“URL”是<strong>后端 REST API URL 定义</strong>，即 `/api/products` 这种；不是 React Router 的前端页面 URL。Module 7 只需知道概念区别，不必重点复习。</div>
+</section>
+
+<section id="checklist">
+  <h2>6. 考前 30 分钟清单</h2>
+  <ul class="check">
+    <li>能说出 `MONGODB_URI` 放 `.env`，且 `.env` 不上传。</li>
+    <li>能写出 Bakery 的 `productSchema` 和 `Product` Model。</li>
+    <li>能写出 5 条 REST URL：GET 列表、GET 单条、POST、PUT、DELETE。</li>
+    <li>能区分 `req.body` / `req.params` / `req.query`。</li>
+    <li>知道 `201` 创建成功、`204` 删除成功、`404` 找不到、`400` 输入错误。</li>
+    <li>知道 `dotenv.config()` 必须在 `process.env` 之前。</li>
+    <li>知道 `mongoose.connect()` 成功后再 `app.listen()`。</li>
+    <li>知道怎么测试：Postman/curl + mongosh/Atlas。</li>
+    <li>知道 `Product` 模型默认对应 `products` 集合。</li>
+    <li>做完下面 Mock Test，错题回看对应知识点。</li>
+  </ul>
+</section>
+
+<section id="files">
+  <h2>7. 推荐复习文件</h2>
+  <ul>
+    <li>`Module 8 Serving MongoDB using REST API/quiz-mock.html`</li>
+    <li>`Module 8 Serving MongoDB using REST API/book-store-api-checkpoints/final/server.js`</li>
+    <li>`.../final/models/Book.js`</li>
+    <li>`.../final/routes/books.js`</li>
+    <li>`.../final/.env.example`</li>
+    <li>`Module 8 Serving MongoDB using REST API/mongodb-testing-guide.html`</li>
+    <li>`MongoDB-and-Mongoose-Step-by-Step.pdf`</li>
+  </ul>
+  <div class="warn">安全提醒：不要提交 `.env`、`atlas-credentials.env`、`Lab8MongoDBUserPassword.txt` 等含真实连接串或密码的文件。</div>
+</section>
+
+</div>
+
+<footer>CSIS 3380 · Quiz 2 复习总览 · Bakery REST API + Mongoose</footer>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSIS 3380 · Quiz 2 Mock Test — Bakery REST API</title>
+<style>
+  :root { --navy:#1a3a5c; --blue:#2d6ca2; --bg:#f4f7fb; --line:#d7e0ea; --green:#2e7d32; --red:#c62828; --amber:#b26a00; --purple:#6b2fb5; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Arial,"Microsoft YaHei",sans-serif; background:var(--bg); color:#24313f; line-height:1.65; }
+  header { background:linear-gradient(120deg,var(--navy),var(--blue)); color:#fff; padding:28px 32px; }
+  header h1 { margin:0 0 6px; font-size:26px; }
+  header p { margin:4px 0; opacity:.94; }
+  .badge { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); padding:3px 10px; border-radius:12px; font-size:13px; margin-right:8px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:26px 22px 80px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px 24px; margin-bottom:20px; box-shadow:0 2px 6px rgba(20,50,80,.04); }
+  section h2 { color:var(--navy); border-bottom:3px solid var(--line); padding-bottom:8px; margin-top:0; font-size:20px; }
+  h3 { color:var(--blue); margin:18px 0 8px; font-size:17px; }
+  code { background:#eef2f7; padding:1px 5px; border-radius:4px; font-family:Consolas,monospace; font-size:13px; }
+  pre { background:#15202b; color:#e6edf3; padding:14px 16px; border-radius:8px; overflow:auto; font-family:Consolas,monospace; font-size:13px; line-height:1.5; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:14px; }
+  th,td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th { background:var(--navy); color:#fff; }
+  tr:nth-child(even) td { background:#f7fafc; }
+  .note,.warn,.ok { border-left:5px solid; padding:10px 14px; margin:14px 0; border-radius:0 6px 6px 0; }
+  .note { border-color:var(--blue); background:#eef5fb; }
+  .warn { border-color:var(--amber); background:#fff7e8; }
+  .ok { border-color:var(--green); background:#eef8ef; }
+  .btn { display:inline-block; background:var(--purple); color:#fff; border:0; border-radius:8px; padding:10px 16px; cursor:pointer; font-size:15px; margin:8px 8px 8px 0; }
+  .btn:hover { background:#552190; }
+  .btn2 { background:var(--blue); }
+  .q { border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:12px 0; background:#fbfdff; }
+  .q-title { font-weight:bold; margin-bottom:8px; }
+  .q label { display:block; margin:4px 0; }
+  .tag { display:inline-block; font-size:12px; color:#fff; background:var(--blue); border-radius:8px; padding:2px 8px; margin-right:8px; }
+  .tag.code { background:var(--purple); }
+  .tag.fill { background:var(--amber); }
+  .tag.multi { background:var(--green); }
+  details.answer { margin-top:10px; background:#eef8ef; border-left:4px solid var(--green); padding:8px 12px; border-radius:4px; }
+  input[type=text] { padding:6px 8px; border:1px solid var(--line); border-radius:5px; min-width:240px; }
+  #scoreBox { font-size:18px; font-weight:bold; margin-top:10px; }
+  footer { text-align:center; color:#7a8a9a; font-size:13px; padding:20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Quiz 2 Mock Test — Bakery REST API</h1>
+  <p><span class="badge">CSIS 3380</span><span class="badge">Quiz 2</span><span class="badge">Bakery</span><span class="badge">Mongoose + URI</span></p>
+  <p>主题：创建一个 Bakery 数据库，字段 <code>productName</code> 和 <code>productDay</code>; 用 generator code 创建 API、测试并提交。</p>
+</header>
+
+<div class="wrap">
+<p><a href="index.html">← 返回 Quiz 2 复习总览</a></p>
+
+<section>
+  <h2>操作流程说明（考试时按这个顺序做）</h2>
+  <ol>
+    <li><strong>建数据库</strong>：Atlas 或本地 MongoDB 都可以，关键是拿到 URI。Atlas URI 里数据库名建议写 <code>bakery</code>。</li>
+    <li><strong>放 URI</strong>：新建 <code>.env</code>，写 <code>MONGODB_URI=你的连接串</code>; 确认 <code>.gitignore</code> 忽略 <code>.env</code>。</li>
+    <li><strong>写 generator code</strong>：第一行 <code>require('dotenv').config()</code>; 然后 express / mongoose / <code>express.json()</code>。</li>
+    <li><strong>写 Schema / Model</strong>：字段 <code>productName</code>、<code>productDay</code>，都是 <code>String</code> + <code>required</code> + <code>trim</code>; Model 名叫 <code>Product</code>，集合默认 <code>products</code>。</li>
+    <li><strong>定义 REST URL</strong>：<code>GET /api/products</code>、<code>POST /api/products</code>、<code>GET /api/products/:id</code>、<code>PUT /api/products/:id</code>、<code>DELETE /api/products/:id</code>。</li>
+    <li><strong>连接并启动</strong>：先 <code>await mongoose.connect(process.env.MONGODB_URI)</code>，成功后再 <code>app.listen(...)</code>。</li>
+    <li><strong>测试</strong>：Postman/curl 测 GET/POST/PUT/DELETE; 看状态码 <code>200/201/204/400/404</code>; 再去 mongosh 或 Atlas Browse Collections 确认数据真的写入。</li>
+    <li><strong>提交</strong>：只提交代码与说明，不提交真实 <code>.env</code> 或密码文件。</li>
+  </ol>
+  <div class="warn"><strong>安全提醒</strong>：URI 含密码，只能放 <code>.env</code> 或部署平台的 Environment Variables，不能写进 <code>server.js</code> 或提交到 GitHub。</div>
+</section>
+
+<section>
+  <h2>Generator code 骨架（你必须看懂每一部分）</h2>
+  <pre>require('dotenv').config({ quiet: true });
+const express = require('express');
+const mongoose = require('mongoose');
+
+const app = express();
+app.use(express.json());
+
+const productSchema = new mongoose.Schema({
+  productName: { type: String, required: true, trim: true },
+  productDay:  { type: String, required: true, trim: true }
+}, { timestamps: true });
+
+const Product = mongoose.model('Product', productSchema);
+
+app.get('/api/products', async (req, res) =&gt; {
+  res.json(await Product.find());
+});
+
+app.post('/api/products', async (req, res) =&gt; {
+  const { productName, productDay } = req.body;
+  const doc = await Product.create({ productName, productDay });
+  res.status(201).json(doc);
+});
+
+app.get('/api/products/:id', async (req, res) =&gt; {
+  const doc = await Product.findById(req.params.id);
+  if (!doc) return res.status(404).json({ message: 'Not found.' });
+  res.json(doc);
+});
+
+async function start() {
+  await mongoose.connect(process.env.MONGODB_URI);
+  app.listen(process.env.PORT || 3000);
+}
+start();</pre>
+</section>
+
+<section>
+  <h2>题目（20 题，每题都有答案与解析）</h2>
+  <button class="btn" id="submitBtn">提交评分</button>
+  <button class="btn btn2" id="showAllBtn">展开全部答案</button>
+  <div id="scoreBox"></div>
+
+  <div id="questions"></div>
+</section>
+
+</div>
+
+<footer>CSIS 3380 · Quiz 2 Mock Test · Bakery REST API + Mongoose</footer>
+
+<script>
+const QUESTIONS = [
+  {
+    type: 'single',
+    title: 'MongoDB Atlas 的连接字符串（URI）在项目中的主要作用是什么？',
+    options: ['它是前端网页的 URL', '告诉 Mongoose 连接哪个集群、账号和数据库', '定义 REST 路由', '安装 npm 依赖'],
+    answer: 1,
+    explain: 'URI 是数据库的地址和钥匙，包含集群、用户名、密码和数据库名。'
+  },
+  {
+    type: 'fill',
+    title: '.env 文件中存放 MongoDB 连接串的变量名是什么？',
+    answer: ['MONGODB_URI'],
+    explain: '代码里写 process.env.MONGODB_URI，所以 .env 的键必须完全一致。'
+  },
+  {
+    type: 'single',
+    title: '连接字符串应该写在哪里才安全？',
+    options: ['server.js 顶部', '.env 里，并让 .gitignore 忽略 .env', 'README.md', 'React 前端'],
+    answer: 1,
+    explain: 'URI 含密码，属于敏感信息，不能进代码仓库。'
+  },
+  {
+    type: 'single',
+    title: '正确启动顺序是哪一个？',
+    options: ['app.listen() → mongoose.connect()', "dotenv.config() → mongoose.connect() → app.listen()", 'mongoose.connect() → dotenv.config()', '只 app.listen()'],
+    answer: 1,
+    explain: '先加载 .env，再连数据库，最后监听端口。'
+  },
+  {
+    type: 'single',
+    title: "mongoose.model('Product', productSchema) 通常对应哪个集合？",
+    options: ['product', 'products', 'Products', 'productModel'],
+    answer: 1,
+    explain: 'Mongoose 会把模型名变小写复数：Product → products。'
+  },
+  {
+    type: 'single',
+    title: '新增一个 Bakery product 应该使用哪个请求？',
+    options: ['GET /api/products', 'POST /api/products', 'PUT /api/products', 'DELETE /api/products'],
+    answer: 1,
+    explain: 'POST 用于向集合路径创建新资源。'
+  },
+  {
+    type: 'single',
+    title: '成功创建新资源时最合适的状态码是？',
+    options: ['200', '201', '204', '404'],
+    answer: 1,
+    explain: '201 Created 表示资源创建成功。'
+  },
+  {
+    type: 'single',
+    title: '读取全部 products 应使用哪个请求？',
+    options: ['GET /api/products', 'GET /api/products/:id', 'POST /api/products', 'DELETE /api/products/:id'],
+    answer: 0,
+    explain: 'GET 集合路径读取全部。'
+  },
+  {
+    type: 'single',
+    title: '读取单个 product 的 REST URL 是？',
+    options: ['GET /api/products', 'GET /api/products/:id', 'POST /api/products/:id', 'DELETE /api/products'],
+    answer: 1,
+    explain: '单条资源用 /:id。'
+  },
+  {
+    type: 'single',
+    title: '在 /api/products?productDay=Monday 中，取 productDay 应使用？',
+    options: ['req.params', 'req.query', 'req.body', 'req.headers'],
+    answer: 1,
+    explain: '问号后面的查询字符串用 req.query。'
+  },
+  {
+    type: 'single',
+    title: '在 /api/products/:id 中，取 id 应使用？',
+    options: ['req.params', 'req.query', 'req.body', 'req.cookies'],
+    answer: 0,
+    explain: '路径参数用 req.params。'
+  },
+  {
+    type: 'single',
+    title: 'POST 请求中的 JSON 数据通常从哪个对象读取？',
+    options: ['req.params', 'req.query', 'req.body', 'req.url'],
+    answer: 2,
+    explain: 'express.json() 会把 JSON body 解析到 req.body。'
+  },
+  {
+    type: 'fill',
+    title: '查询字符串写在 URL 的哪个符号之后？（只写一个符号）',
+    answer: ['?'],
+    explain: '例如 /api/products?productDay=Monday。'
+  },
+  {
+    type: 'code',
+    title: '补全 Schema：productName 是必填字符串并自动去空格，productDay 是必填字符串。写出关键字段定义。',
+    keywords: ['productname', 'string', 'required', 'trim', 'productday'],
+    answerText: "productName: { type: String, required: true, trim: true },\nproductDay: { type: String, required: true, trim: true }",
+    explain: 'type 指定类型，required 表示必填，trim 自动去首尾空格。'
+  },
+  {
+    type: 'single',
+    title: '如果 Schema 规定 productDay 必填，POST 时漏掉它，Mongoose 会抛什么错误？',
+    options: ['CastError', 'ValidationError', 'SyntaxError', 'TimeoutError'],
+    answer: 1,
+    explain: '字段不满足 Schema 规则会触发 ValidationError，通常返回 400。'
+  },
+  {
+    type: 'single',
+    title: 'GET /api/products/123 中 123 不是合法 ObjectId，通常返回什么？',
+    options: ['400 CastError', '404', '500', '201'],
+    answer: 0,
+    explain: 'ObjectId 格式非法是客户端输入错误，CastError 映射为 400。'
+  },
+  {
+    type: 'single',
+    title: "findByIdAndUpdate(..., { returnDocument: 'after' }) 的作用是什么？",
+    options: ['返回更新后的文档', '返回更新前的旧文档', '只预览不更新', '删除文档'],
+    answer: 0,
+    explain: "returnDocument: 'after' 让 Mongoose 返回更新后的版本。"
+  },
+  {
+    type: 'single',
+    title: 'DELETE 成功且没有响应体时，最合适的状态码是？',
+    options: ['200', '201', '204', '400'],
+    answer: 2,
+    explain: '204 No Content 表示成功但没有内容返回。'
+  },
+  {
+    type: 'multi',
+    title: '哪些做法能证明 API 的写操作真的进入了 MongoDB？（多选）',
+    options: ['API 返回 201 并带新 _id', 'mongosh 中 db.products.find() 能看到新文档', 'Atlas Browse Collections 能看到新文档', '只看页面颜色'],
+    answer: [0, 1, 2],
+    explain: 'API 响应加数据库验证才算完整测试。'
+  },
+  {
+    type: 'multi',
+    title: '要测试 Bakery API，哪些检查合理？（多选）',
+    options: ['GET /api/products 返回数组', 'POST 带 productName 和 productDay 返回 201', '用 ?productDay=Monday 能筛选', '把密码发给同学测试'],
+    answer: [0, 1, 2],
+    explain: '前三项验证读取、创建、查询；第四项会泄露密码。'
+  }
+];
+
+function renderQuestions() {
+  const wrap = document.getElementById('questions');
+  wrap.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    let tag = q.type === 'single' ? '单选' : q.type === 'multi' ? '多选' : q.type === 'fill' ? '填空' : '代码';
+    let inner = `<div class="q-title"><span class="tag ${q.type}">${tag}</span>${i + 1}. ${q.title}</div>`;
+    if (q.type === 'single' || q.type === 'multi') {
+      q.options.forEach((opt, j) => {
+        const type = q.type === 'single' ? 'radio' : 'checkbox';
+        inner += `<label><input type="${type}" name="q${i}" value="${j}"> ${opt}</label>`;
+      });
+    } else if (q.type === 'fill') {
+      inner += `<input type="text" id="q${i}" placeholder="输入答案">`;
+    } else {
+      inner += `<textarea id="q${i}" rows="4" style="width:100%;padding:8px;" placeholder="写出关键代码"></textarea>`;
+    }
+    let ans = '';
+    if (q.type === 'single') ans = `答案：${q.options[q.answer]}`;
+    else if (q.type === 'multi') ans = `答案：${q.answer.map(x => q.options[x]).join('；')}`;
+    else if (q.type === 'fill') ans = `答案：${q.answer.join(' / ')}`;
+    else ans = `参考答案：<pre>${q.answerText}</pre>`;
+    inner += `<details class="answer"><summary>答案与解析</summary>${ans}<div><strong>解析：</strong>${q.explain}</div></details>`;
+    div.innerHTML = inner;
+    wrap.appendChild(div);
+  });
+}
+
+function scoreQuiz() {
+  let score = 0;
+  QUESTIONS.forEach((q, i) => {
+    let ok = false;
+    if (q.type === 'single') {
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
+      ok = selected && Number(selected.value) === q.answer;
+    } else if (q.type === 'multi') {
+      const selected = Array.from(document.querySelectorAll(`input[name="q${i}"]:checked`)).map(x => Number(x.value)).sort();
+      ok = JSON.stringify(selected) === JSON.stringify([...q.answer].sort());
+    } else if (q.type === 'fill') {
+      const val = document.getElementById('q' + i).value.trim().toLowerCase();
+      ok = q.answer.some(a => a.toLowerCase() === val);
+    } else {
+      const val = document.getElementById('q' + i).value.toLowerCase();
+      ok = q.keywords.every(k => val.includes(k));
+    }
+    if (ok) score++;
+  });
+  document.getElementById('scoreBox').textContent = `得分：${score} / ${QUESTIONS.length}`;
+}
+
+function showAll() {
+  document.querySelectorAll('details.answer').forEach(d => d.open = true);
+}
+
+renderQuestions();
+document.getElementById('submitBtn').addEventListener('click', scoreQuiz);
+document.getElementById('showAllBtn').addEventListener('click', showAll);
+</script>
+</body>
+</html>
